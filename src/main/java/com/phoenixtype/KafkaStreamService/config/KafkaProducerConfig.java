@@ -3,6 +3,7 @@ package com.phoenixtype.KafkaStreamService.config;
 import com.phoenixtype.KafkaStreamService.model.CustomerBalance;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
+import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -20,11 +21,12 @@ import java.util.Map;
 @Configuration
 public class KafkaProducerConfig {
 
-    private final String bootstrapServers; // Provided in application.properties
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String bootstrapServers; // Provided in application.properties
 
-    public KafkaProducerConfig(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
-        this.bootstrapServers = bootstrapServers;
-    }
+    @Value("${spring.kafka.properties.schema.registry.url}")
+    private String registryUrl;
+
 
     @Bean
     public ProducerFactory<String, CustomerBalance> producerFactory() {
@@ -32,7 +34,7 @@ public class KafkaProducerConfig {
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
-        configProps.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
+        configProps.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, registryUrl);
         return new DefaultKafkaProducerFactory<>(configProps);
     }
 
